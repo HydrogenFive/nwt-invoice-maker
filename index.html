@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Fill in your invoice details, see it update as you type, and download it as a PDF." />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23C80000'/%3E%3Cpath d='M9 8h14M9 14h14M9 20h9' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <title>Invoice maker</title>
+  </head>
+  <body data-view="edit">
+    <header class="topbar">
+      <h1 class="brand">Invoice maker</h1>
+
+      <div class="view-switch" role="group" aria-label="Show">
+        <button type="button" data-view-button="edit" aria-pressed="true">Edit</button>
+        <button type="button" data-view-button="preview" aria-pressed="false">Preview</button>
+      </div>
+
+      <div class="actions">
+        <p class="balance" aria-live="polite">
+          <span class="balance-label">Balance due</span>
+          <strong id="balance-due">£0.00</strong>
+        </p>
+        <button type="button" class="btn btn-quiet" data-new-invoice>New invoice</button>
+        <button type="button" id="download" class="btn btn-primary" disabled>
+          <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <form id="editor" class="editor" autocomplete="on" novalidate>
+        <button type="button" class="btn btn-quiet mobile-new" data-new-invoice>New invoice</button>
+        <section class="group" aria-labelledby="h-you">
+          <h2 id="h-you">Your details</h2>
+          <div class="field">
+            <label for="business-name">Business name</label>
+            <input id="business-name" data-field="business.name" autocomplete="organization" />
+          </div>
+          <div class="field">
+            <label for="business-address">Address</label>
+            <textarea id="business-address" data-field="business.address" rows="2" autocomplete="street-address"></textarea>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="business-phone">Phone</label>
+              <input id="business-phone" data-field="business.phone" type="tel" autocomplete="tel" />
+            </div>
+            <div class="field">
+              <label for="business-email">Email</label>
+              <input id="business-email" data-field="business.email" type="email" autocomplete="email" />
+            </div>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="h-invoice">
+          <h2 id="h-invoice">Invoice</h2>
+          <div class="row-2">
+            <div class="field">
+              <label for="invoice-date">Date</label>
+              <input id="invoice-date" data-field="date" type="date" />
+            </div>
+            <div class="field">
+              <label for="invoice-number">Invoice number <span class="optional">optional</span></label>
+              <input id="invoice-number" data-field="invoiceNumber" autocomplete="off" />
+            </div>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="h-bill">
+          <h2 id="h-bill">Bill to</h2>
+          <div class="field">
+            <label for="customer-name">Customer name</label>
+            <input id="customer-name" data-field="customer.name" autocomplete="off" />
+            <p class="hint">The PDF is named after this: <span id="file-name">Invoice.pdf</span></p>
+          </div>
+          <div class="field">
+            <label for="customer-address">Address</label>
+            <textarea id="customer-address" data-field="customer.address" rows="3" autocomplete="off"></textarea>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="h-items">
+          <h2 id="h-items">Items</h2>
+          <ol id="items" class="items"></ol>
+          <button type="button" id="add-item" class="btn btn-quiet btn-add">
+            <svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Add item
+          </button>
+        </section>
+
+        <section class="group" aria-labelledby="h-totals">
+          <h2 id="h-totals">Discount, tax and shipping</h2>
+          <div class="row-3">
+            <div class="field">
+              <label for="discount">Discount</label>
+              <div class="affix"><span aria-hidden="true">£</span><input id="discount" data-field="discount" inputmode="decimal" autocomplete="off" placeholder="0.00" /></div>
+            </div>
+            <div class="field">
+              <label for="tax-rate">Tax rate</label>
+              <div class="affix affix-end"><input id="tax-rate" data-field="taxRate" inputmode="decimal" autocomplete="off" placeholder="0" /><span aria-hidden="true">%</span></div>
+            </div>
+            <div class="field">
+              <label for="shipping">Shipping</label>
+              <div class="affix"><span aria-hidden="true">£</span><input id="shipping" data-field="shipping" inputmode="decimal" autocomplete="off" placeholder="0.00" /></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="h-remarks">
+          <h2 id="h-remarks">Remarks and payment instructions</h2>
+          <div class="field">
+            <label for="remarks" class="visually-hidden">Remarks and payment instructions</label>
+            <textarea id="remarks" data-field="remarks" rows="4" placeholder="For example, your bank details and when payment is due"></textarea>
+          </div>
+        </section>
+
+        <p class="saved-note">Everything you type is kept in this browser, so your details are here next time.</p>
+      </form>
+
+      <section class="wall" aria-label="Invoice preview">
+        <div id="pages" class="pages">
+          <p class="loading">Loading preview…</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" hidden>
+      <span id="toast-text"></span>
+      <button type="button" id="toast-undo" class="toast-action">Undo</button>
+    </div>
+
+    <template id="item-template">
+      <li class="item">
+        <div class="field item-desc">
+          <label>Description</label>
+          <input data-item-field="description" autocomplete="off" />
+        </div>
+        <div class="item-numbers">
+          <div class="field">
+            <label>Qty</label>
+            <input data-item-field="qty" inputmode="decimal" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Unit price</label>
+            <div class="affix"><span aria-hidden="true">£</span><input data-item-field="unitPrice" inputmode="decimal" autocomplete="off" /></div>
+          </div>
+          <div class="item-total">
+            <span class="item-total-label">Total</span>
+            <output class="item-total-value">£0.00</output>
+          </div>
+          <button type="button" class="remove" data-remove>
+            <svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><path d="M5 5l10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </li>
+    </template>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
