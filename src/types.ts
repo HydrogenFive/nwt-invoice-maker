@@ -1,4 +1,4 @@
-/** Everything the person types into the form. Numbers are kept as the raw text they typed. */
+/** Everything the person types into the form. Every field is free text, exactly as typed. */
 export interface LineItem {
   id: string;
   description: string;
@@ -13,17 +13,17 @@ export interface InvoiceData {
     phone: string;
     email: string;
   };
-  date: string; // yyyy-mm-dd, from <input type="date">
+  date: string; // printed as typed, e.g. "17/8/25"
   invoiceNumber: string;
   customer: {
     name: string;
     address: string; // multi-line
   };
   items: LineItem[];
-  discount: string; // amount, in pounds
-  taxRate: string; // percent
-  shipping: string; // amount, in pounds
-  remarks: string; // multi-line
+  discount: string; // amount in pounds; left off the invoice when blank
+  taxRate: string; // percent; left off the invoice when blank
+  shipping: string; // amount in pounds; left off the invoice when blank
+  remarks: string; // multi-line; left off the invoice when blank
 }
 
 /** One drawing instruction on a page. Coordinates are PDF points (1/72 inch), origin top-left. */

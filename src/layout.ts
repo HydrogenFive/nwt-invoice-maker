@@ -6,7 +6,7 @@
  * Units are PDF points on an A4 page (595 × 842), measured from the top-left corner.
  * Positions and colours were taken from the original invoice design.
  */
-import { computeTotals, formatDate, formatMoney, formatPlain, formatQty, lineTotal, parseNumber } from './calc';
+import { computeTotals, displayValue, formatMoney, formatPlain, lineTotal } from './calc';
 import type { DrawOp, FontWeight, InvoiceData, Measure, Page } from './types';
 
 export const PAGE_W = 595.28;
@@ -141,7 +141,7 @@ export function layoutInvoice(data: InvoiceData, measure: Measure): Page[] {
     if (measure(value, size, 'regular') <= RIGHT_END - RIGHT_X) text(RIGHT_X, baseline, value, size, COLOR.date);
     else text(RIGHT_END - 3, baseline, value, size, COLOR.date, 'regular', 'right');
   };
-  rightText(formatDate(data.date), 190);
+  rightText(data.date.trim(), 190);
   line(455, 196.5, RIGHT_END, 196.5, COLOR.faintRule, 0.75);
   rightText(data.invoiceNumber.trim() ? `Invoice no. ${data.invoiceNumber.trim()}` : '', 248);
   line(455, 254.5, RIGHT_END, 254.5, COLOR.faintRule, 0.75);
@@ -172,17 +172,19 @@ export function layoutInvoice(data: InvoiceData, measure: Measure): Page[] {
     line(LEFT, bottom, TABLE_RIGHT, bottom, COLOR.grid, 0.6);
   };
 
+  // Description, quantity and unit price print as typed (a plain number price is shown as money),
+  // wrapping onto more lines if they don't fit their column.
+  const cellLines = (value: string, width: number) => (value.trim() ? wrapText(value.trim(), width, 10, 'regular', measure) : []);
   const rows = data.items.map((item) => {
-    const price = parseNumber(item.unitPrice);
     const total = lineTotal(item);
     return {
-      desc: item.description.trim() ? wrapText(item.description, COLS[1] - COLS[0] - 6, 10, 'regular', measure) : [],
-      qty: item.qty.trim() ? formatQty(item.qty) : '',
-      unit: price !== null ? formatMoney(price) : item.unitPrice.trim(),
+      desc: cellLines(item.description, COLS[1] - COLS[0] - 6),
+      qty: cellLines(item.qty, COLS[2] - COLS[1] - 6),
+      unit: cellLines(displayValue(item.unitPrice, formatMoney), COLS[3] - COLS[2] - 12),
       total: total !== null ? formatMoney(total) : '',
     };
   });
-  while (rows.length < MIN_ROWS) rows.push({ desc: [], qty: '', unit: '', total: '' });
+  while (rows.length < MIN_ROWS) rows.push({ desc: [], qty: [], unit: [], total: '' });
 
   let y = Math.max(420, billLast + 29);
   drawTableHeader(y);
@@ -190,7 +192,8 @@ export function layoutInvoice(data: InvoiceData, measure: Measure): Page[] {
   let segmentTop = y;
 
   rows.forEach((row, index) => {
-    const h = Math.max(ROW_H, 12.6 + Math.max(0, row.desc.length - 1) * 12 + 5.6);
+    const lineCount = Math.max(row.desc.length, row.qty.length, row.unit.length, 1);
+    const h = Math.max(ROW_H, 12.6 + (lineCount - 1) * 12 + 5.6);
     if (y + h > CONTENT_BOTTOM) {
       drawGrid(segmentTop, y);
       newPage();
@@ -202,32 +205,35 @@ export function layoutInvoice(data: InvoiceData, measure: Measure): Page[] {
     if (index % 2 === 1) rect(LEFT, y, TABLE_RIGHT - LEFT, h, COLOR.zebra);
     const base = y + 12.6;
     row.desc.forEach((l, i) => text(COLS[0] + 3, base + i * 12, l, 10, COLOR.body));
-    text((COLS[1] + COLS[2]) / 2, base, row.qty, fitSize(row.qty, COLS[2] - COLS[1] - 6, 10, 'regular', measure), COLOR.body, 'regular', 'center');
-    text(COLS[2] + 8, base, row.unit, fitSize(row.unit, COLS[3] - COLS[2] - 12, 10, 'regular', measure), COLOR.body);
+    row.qty.forEach((l, i) => text((COLS[1] + COLS[2]) / 2, base + i * 12, l, 10, COLOR.body, 'regular', 'center'));
+    row.unit.forEach((l, i) => text(COLS[2] + 8, base + i * 12, l, 10, COLOR.body));
     text(COLS[4] - 4, base, row.total, fitSize(row.total, COLS[4] - COLS[3] - 8, 10, 'regular', measure), COLOR.body, 'regular', 'right');
     y += h;
   });
   drawGrid(segmentTop, y);
 
   // ── Remarks and totals ────────────────────────────────────────────────────
+  // Discount, tax and shipping only appear when something has been typed in them.
   const totals = computeTotals(data);
-  const TOTALS_BLOCK_H = 5 * TOTALS_ROW_H + 36;
-  if (y + TOTALS_BLOCK_H > CONTENT_BOTTOM) {
+  const totalRows: [string, string][] = [['SUBTOTAL', formatPlain(totals.subtotal)]];
+  if (data.discount.trim()) totalRows.push(['DISCOUNT', displayValue(data.discount, formatPlain)]);
+  if (data.taxRate.trim()) {
+    totalRows.push(['TAX RATE', displayValue(data.taxRate, (n) => `${formatPlain(n)}%`)]);
+    totalRows.push(['TOTAL TAX', formatPlain(totals.totalTax)]);
+  }
+  if (data.shipping.trim()) totalRows.push(['SHIPPING/HANDLING', displayValue(data.shipping, formatPlain)]);
+
+  const totalsBlockH = totalRows.length * TOTALS_ROW_H + 36;
+  if (y + totalsBlockH > CONTENT_BOTTOM) {
     newPage();
     y = CONTINUATION_TOP + 8;
   }
   const blockTop = y;
 
-  text(LEFT, blockTop + 12.5, 'Remarks / Payment Instructions:', 9, COLOR.remarks);
+  // Remarks only appear when something has been typed in them.
   const remarkLines = data.remarks.trim() ? wrapText(data.remarks.trim(), 280, 9.5, 'regular', measure) : [];
+  if (remarkLines.length) text(LEFT, blockTop + 12.5, 'Remarks / Payment Instructions:', 9, COLOR.remarks);
 
-  const totalRows: [string, string][] = [
-    ['SUBTOTAL', formatPlain(totals.subtotal)],
-    ['DISCOUNT', formatPlain(totals.discount)],
-    ['TAX RATE', `${formatPlain(totals.taxRate)}%`],
-    ['TOTAL TAX', formatPlain(totals.totalTax)],
-    ['SHIPPING/HANDLING', formatPlain(totals.shipping)],
-  ];
   const labelRight = COLS[3] - 4;
   const valueRight = COLS[4] - 4;
   const valueWidth = COLS[4] - COLS[3] - 8;
@@ -238,7 +244,7 @@ export function layoutInvoice(data: InvoiceData, measure: Measure): Page[] {
     if (i < totalRows.length - 1) line(COLS[3], top + TOTALS_ROW_H, COLS[4], top + TOTALS_ROW_H, COLOR.cellRule, 0.75);
   });
 
-  const balanceTop = blockTop + 5 * TOTALS_ROW_H;
+  const balanceTop = blockTop + totalRows.length * TOTALS_ROW_H;
   rect(COLS[3], balanceTop + 0.7, COLS[4] - COLS[3], 33.3, COLOR.balanceFill);
   line(COLS[2], balanceTop, COLS[4], balanceTop, COLOR.balanceRule, 1.4);
   line(COLS[3], balanceTop + 34, COLS[4], balanceTop + 34, COLOR.balanceEdge, 1.2);

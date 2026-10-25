@@ -25,16 +25,16 @@ export function newItem(): LineItem {
   return { id: makeId(), description: '', qty: '', unitPrice: '' };
 }
 
-export function todayIso(): string {
+/** Today's date written the way the original invoice writes it: 17/8/25. */
+export function todayText(): string {
   const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${d.getDate()}/${d.getMonth() + 1}/${String(d.getFullYear()).slice(2)}`;
 }
 
 export function blankInvoice(business = DEFAULT_BUSINESS, remarks = DEFAULT_REMARKS): InvoiceData {
   return {
     business: { ...business },
-    date: todayIso(),
+    date: todayText(),
     invoiceNumber: '',
     customer: { name: '', address: '' },
     items: [newItem()],

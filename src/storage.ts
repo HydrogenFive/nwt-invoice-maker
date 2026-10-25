@@ -1,3 +1,4 @@
+import { formatDate } from './calc';
 import { blankInvoice, makeId, newItem } from './defaults';
 import type { InvoiceData } from './types';
 
@@ -26,7 +27,8 @@ export function loadInvoice(): InvoiceData {
         phone: str(saved.business?.phone, fallback.business.phone),
         email: str(saved.business?.email, fallback.business.email),
       },
-      date: str(saved.date, fallback.date),
+      // Earlier versions stored the date as 2025-08-17; show it the way it's printed instead.
+      date: formatDate(str(saved.date, fallback.date)),
       invoiceNumber: str(saved.invoiceNumber, ''),
       customer: {
         name: str(saved.customer?.name, ''),

@@ -56,6 +56,14 @@ The preview and the PDF are both drawn from `src/layout.ts`, so they always matc
 
 To have your name, address, phone and email filled in for anyone who opens the page, put them in `DEFAULT_BUSINESS` in `src/defaults.ts`. Bear in mind the site is public, so anything there can be read by anyone who looks at the page's code. Leaving it blank is fine: each browser remembers what was typed into it.
 
+### Typing in the boxes
+
+Every box takes any text. What you type is printed as you typed it. The exception is a unit price, discount, tax rate or shipping amount that's just a number, which gets tidied up (`200` prints as `£200.00`).
+
+For the sums, the first number in a box is used and anything else is ignored: `10m` counts as 10, `£12.50 per bag` as 12.50, `20% VAT` as 20, and `Free` as nothing. An item with no quantity counts as one of it.
+
+Discount, tax rate, shipping and remarks are left off the invoice when their box is blank.
+
 ### Totals
 
 - **Subtotal** is the sum of the item totals.

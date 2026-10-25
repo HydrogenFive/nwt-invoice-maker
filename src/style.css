@@ -313,44 +313,8 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
-/* £ and % beside the number boxes */
-.affix {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-}
-
-.affix:focus-within {
-  border-color: var(--accent);
-  outline: 2px solid color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.affix span {
-  padding: 0 0 0 11px;
-  color: var(--muted);
-}
-
-.affix-end span {
-  padding: 0 11px 0 0;
-}
-
-.affix input {
-  height: 40px;
-  border: 0;
-  outline: none;
-  padding-left: 6px;
-  font-variant-numeric: tabular-nums;
-}
-
-.affix-end input {
-  padding-left: 11px;
-  padding-right: 6px;
-}
-
-.affix input:focus {
-  outline: none;
+.group-hint {
+  margin: -8px 0 14px;
 }
 
 /* ── Line items ──────────────────────────────────────────────────────────── */
@@ -461,6 +425,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 16px;
+  width: max-content;
   max-width: calc(100vw - 32px);
   padding: 10px 10px 10px 16px;
   border-radius: 8px;

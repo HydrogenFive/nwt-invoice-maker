@@ -46,11 +46,11 @@
           <div class="row-2">
             <div class="field">
               <label for="business-phone">Phone</label>
-              <input id="business-phone" data-field="business.phone" type="tel" autocomplete="tel" />
+              <input id="business-phone" data-field="business.phone" autocomplete="tel" />
             </div>
             <div class="field">
               <label for="business-email">Email</label>
-              <input id="business-email" data-field="business.email" type="email" autocomplete="email" />
+              <input id="business-email" data-field="business.email" autocomplete="email" />
             </div>
           </div>
         </section>
@@ -60,7 +60,7 @@
           <div class="row-2">
             <div class="field">
               <label for="invoice-date">Date</label>
-              <input id="invoice-date" data-field="date" type="date" />
+              <input id="invoice-date" data-field="date" autocomplete="off" />
             </div>
             <div class="field">
               <label for="invoice-number">Invoice number <span class="optional">optional</span></label>
@@ -93,27 +93,29 @@
 
         <section class="group" aria-labelledby="h-totals">
           <h2 id="h-totals">Discount, tax and shipping</h2>
+          <p class="hint group-hint" id="totals-hint">Leave any of these blank to keep it off the invoice.</p>
           <div class="row-3">
             <div class="field">
-              <label for="discount">Discount</label>
-              <div class="affix"><span aria-hidden="true">£</span><input id="discount" data-field="discount" inputmode="decimal" autocomplete="off" placeholder="0.00" /></div>
+              <label for="discount">Discount (£)</label>
+              <input id="discount" data-field="discount" autocomplete="off" aria-describedby="totals-hint" />
             </div>
             <div class="field">
-              <label for="tax-rate">Tax rate</label>
-              <div class="affix affix-end"><input id="tax-rate" data-field="taxRate" inputmode="decimal" autocomplete="off" placeholder="0" /><span aria-hidden="true">%</span></div>
+              <label for="tax-rate">Tax rate (%)</label>
+              <input id="tax-rate" data-field="taxRate" autocomplete="off" aria-describedby="totals-hint" />
             </div>
             <div class="field">
-              <label for="shipping">Shipping</label>
-              <div class="affix"><span aria-hidden="true">£</span><input id="shipping" data-field="shipping" inputmode="decimal" autocomplete="off" placeholder="0.00" /></div>
+              <label for="shipping">Shipping (£)</label>
+              <input id="shipping" data-field="shipping" autocomplete="off" aria-describedby="totals-hint" />
             </div>
           </div>
         </section>
 
         <section class="group" aria-labelledby="h-remarks">
           <h2 id="h-remarks">Remarks and payment instructions</h2>
+          <p class="hint group-hint" id="remarks-hint">Leave blank to keep this off the invoice.</p>
           <div class="field">
             <label for="remarks" class="visually-hidden">Remarks and payment instructions</label>
-            <textarea id="remarks" data-field="remarks" rows="4" placeholder="For example, your bank details and when payment is due"></textarea>
+            <textarea id="remarks" data-field="remarks" rows="4" aria-describedby="remarks-hint" placeholder="For example, your bank details and when payment is due"></textarea>
           </div>
         </section>
 
@@ -141,11 +143,11 @@
         <div class="item-numbers">
           <div class="field">
             <label>Qty</label>
-            <input data-item-field="qty" inputmode="decimal" autocomplete="off" />
+            <input data-item-field="qty" autocomplete="off" />
           </div>
           <div class="field">
-            <label>Unit price</label>
-            <div class="affix"><span aria-hidden="true">£</span><input data-item-field="unitPrice" inputmode="decimal" autocomplete="off" /></div>
+            <label>Unit price (£)</label>
+            <input data-item-field="unitPrice" autocomplete="off" />
           </div>
           <div class="item-total">
             <span class="item-total-label">Total</span>
